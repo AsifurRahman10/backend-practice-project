@@ -2,7 +2,7 @@ import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { uploadImageOnCloud } from "../utils/fileUploader.js";
+import { removeUploadedFiles, uploadImageOnCloud } from "../utils/fileUploader.js";
 
 
 export const registerUser = asyncHandler(async (req, res) => {
@@ -14,6 +14,7 @@ export const registerUser = asyncHandler(async (req, res) => {
         $or: [{ userName }, { email }]
     })
     if (userAlreadyExist) {
+        removeUploadedFiles(req.files)
         throw new ApiError(409, 'User already exist')
     }
     const avatarLocalPath = req.files?.avatar[0].path;

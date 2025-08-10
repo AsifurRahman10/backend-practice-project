@@ -9,17 +9,38 @@ cloudinary.config({
 
 const uploadImageOnCloud = async (localFilePath) => {
     try {
-        if (!localFilePath) return null
+        if (!localFilePath) return null;
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: 'auto'
-        })
-        fs.unlinkSync(localFilePath)
-        return response
-
+        });
+        try {
+            fs.unlinkSync(localFilePath);
+        } catch (e) {
+            console.error('Failed to delete file:', e);
+        }
+        return response;
     } catch (error) {
-        fs.unlinkSync(localFilePath)
-        return null
+        try {
+            fs.unlinkSync(localFilePath);
+        } catch (e) {
+            console.error('Failed to delete file:', e);
+        }
+        return null;
     }
-}
+};
 
-export { uploadImageOnCloud }
+const removeUploadedFiles = (files) => {
+    if (!files) return;
+    Object.values(files).forEach(fileArray => {
+        fileArray.forEach(file => {
+            try {
+                fs.unlinkSync(file.path);
+            } catch (err) {
+                console.error('Failed to delete file:', err);
+            }
+        });
+    });
+};
+
+
+export { uploadImageOnCloud, removeUploadedFiles }
