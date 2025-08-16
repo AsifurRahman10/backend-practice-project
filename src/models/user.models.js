@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 const userSchema = new Schema({
-    userName: {
+    username: {
         type: String,
-        require: true,
+        required: true,
         unique: true,
         lowercase: true,
         trim: true,
@@ -13,20 +13,20 @@ const userSchema = new Schema({
     },
     email: {
         type: String,
-        require: true,
+        required: true,
         unique: true,
         lowercase: true,
         trim: true,
     },
     fullName: {
         type: String,
-        require: true,
+        required: true,
         trim: true,
         index: true
     },
     avatar: {
         type: String,
-        require: true,
+        required: true,
     },
     coverImage: {
         type: String,
@@ -36,13 +36,13 @@ const userSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: "Video"
         }],
-        require: true,
+        required: true,
         trim: true,
         index: true
     },
     password: {
         type: String,
-        require: [true, 'password is required'],
+        required: [true, 'password is required'],
     },
     refreshToken: {
         type: String
@@ -53,8 +53,8 @@ const userSchema = new Schema({
 )
 
 userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return
-    this.password = bcrypt.hash(this.password, 10);
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
     next()
 })
 
