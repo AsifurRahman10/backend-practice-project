@@ -5,6 +5,22 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { removeUploadedFiles, uploadImageOnCloud } from "../utils/fileUploader.js";
 
 
+const generateAccessTokenAndRefreshToken = async (userId) => {
+    try {
+        const user = await User.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        user.refreshToken = refreshToken
+        await user.save({ validateBeforeSave: false })
+
+        return { accessToken, refreshToken }
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong")
+    }
+}
+
+
 export const registerUser = asyncHandler(async (req, res) => {
     const { userName, email, fullName, password } = req.body;
     if ([userName, email, fullName, password].some(field => field?.trim() === '')) {
@@ -103,17 +119,25 @@ export const loginUser = asyncHandler(async (req, res) => {
 
 })
 
-const generateAccessTokenAndRefreshToken = async (userId) => {
-    try {
-        const user = await User.findById(userId)
-        const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefreshToken()
+export const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user._id,
+        {
+            $set: {
+                refreshToken: undefined,
 
-        user.refreshToken = refreshToken
-        await user.save({ validateBeforeSave: false })
+            }
+        },
+        { new: true }
+    )
 
-        return { accessToken, refreshToken }
-    } catch (error) {
-        throw new ApiError(500, "Something went wrong")
+    const option = {
+        httpOnly: true,
+        secure: true,
     }
-}
+    res.status(200).clearCookie("accessToken").clearCookie("refreshToken").json(
+        new ApiResponse(200, {}, "Logout successfully")
+    )
+})
+
+
+
