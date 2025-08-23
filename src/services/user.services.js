@@ -13,3 +13,18 @@ export const updateUserPassword = async (oldPassword, newPassword, id) => {
     await user.save();
     return true
 }
+
+export const updateUserProfile = async (id, fullName, email) => {
+    const user = await User.findByIdAndUpdate(id,
+        {
+            $set: {
+                fullName,
+                email
+            }
+        },
+        {
+            new: true
+        }
+    ).select('-password')
+    return user
+}

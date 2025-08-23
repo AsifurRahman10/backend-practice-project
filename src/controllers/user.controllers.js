@@ -1,6 +1,6 @@
 import { User } from "../models/user.models.js";
 import { generateAccessTokenAndRefreshToken } from "../services/auth.services.js";
-import { updateUserPassword } from "../services/user.services.js";
+import { updateUserPassword, updateUserProfile } from "../services/user.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -171,7 +171,7 @@ export const refreshAccessToken = async (req, res) => {
 
 export const changePassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body;
-    const id = req.user.id;
+    const id = req.user._id;
     await updateUserPassword(oldPassword, newPassword, id)
     return res.status(200).json(
         ApiResponse(200, "Password updated")
@@ -182,6 +182,22 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(200, req.user, "User retrieved successfully")
+})
+
+export const updateUserInfo = asyncHandler(async (req, res) => {
+    const { fullName, email } = req.body;
+    const id = req.user._id;
+    if (!email || !fullName) {
+        throw new ApiError(400, "Both field is required")
+    }
+    const updatedUser = await updateUserProfile(id, fullName, email)
+    if (!updatedUser) {
+        throw new ApiError(404, "User not found");
+    }
+
+    res.status(200)
+        .json(new ApiResponse(200, updatedData, "User info updated"))
+
 })
 
 
