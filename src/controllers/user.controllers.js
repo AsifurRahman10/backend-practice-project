@@ -1,5 +1,6 @@
 import { User } from "../models/user.models.js";
 import { generateAccessTokenAndRefreshToken } from "../services/auth.services.js";
+import { updateUserPassword } from "../services/user.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -167,6 +168,15 @@ export const refreshAccessToken = async (req, res) => {
         throw new ApiError(401, error?.message || "something went wrong")
     }
 }
+
+export const changePassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    const id = req.user.id;
+    await updateUserPassword(oldPassword, newPassword, id)
+    return res.status(200).json(
+        ApiResponse(200, "Password updated")
+    )
+})
 
 
 
