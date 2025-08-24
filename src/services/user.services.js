@@ -31,23 +31,45 @@ export const updateUserProfile = async (id, fullName, email) => {
 }
 
 export const updateAvatarImage = async (id, uploadImage) => {
+    const oldUser = await User.findById(id).select('avatar');
     const user = await User.findByIdAndUpdate(id,
-        { avatar: uploadImage?.url },
+        {
+            avatar: {
+                url: uploadImage?.url,
+                publicId: uploadImage?.public_id
+            }
+        },
         { new: true }
     ).select('-password')
+    if (oldUser?.avatar?.public_id) {
+        await deleteOldImage(oldUser.avatar.public_id);
+    }
     return user
+}
+
+const deleteOldImage = async (publicId) => {
+    if (!publicId) {
+        throw new ApiError(400, "no public key found")
+    }
+    await cloudinary.uploader.destroy(publicId);
 }
 
 export const updateCoverImage = async (id, uploadImage) => {
     const user = await User.findByIdAndUpdate(id,
-        { coverImage: uploadImage?.url },
+        {
+            coverImage: {
+                url: uploadImage?.url,
+                publicId: uploadImage?.public_id
+            }
+        },
         { new: true }
     ).select('-password')
+    await deleteOldImage(user?.coverImage?.public_id)
     return user
 }
 
 
-export const userProfileInfo = async (username) => {
+export const userProfileInfo = async (username, id) => {
     const profile = await User.aggregate([
         // get the document from database
         {
@@ -80,11 +102,11 @@ export const userProfileInfo = async (username) => {
                     $size: "$subscriber"
                 },
                 subscribedToCount: {
-                    $size: "subscribedTo"
+                    $size: "$subscribedTo"
                 },
                 isSubscribed: {
                     $cond: {
-                        if: { $in: [req?.user?._id, "$subscriber.subscriber"] },
+                        if: { $in: [id, "$subscriber.subscriber"] },
                         then: true,
                         else: false
                     }
@@ -113,7 +135,7 @@ export const userProfileInfo = async (username) => {
 }
 
 export const getUserWatchHistory = async (id) => {
-    const data = User.aggregate([
+    const data = await User.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(id)
@@ -125,29 +147,37 @@ export const getUserWatchHistory = async (id) => {
                 localField: 'watchHistory',
                 foreignField: "_id",
                 as: "watchHistory",
-                pipeline: {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'owner',
-                        foreignField: "_id",
-                        as: "owner",
-                        pipeline: {
-                            $project: {
-                                username: 1,
-                                fullName: 1,
-                                avatar: 1
-                            }
-                        }
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'owner',
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        fullName: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        },
                     },
-                    $addFields: {
-                        owner: {
-                            $first: "$owner"
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner"
+                            }
+
                         }
                     }
-                }
+
+                ]
             }
         }
     ])
-
+    console.log(data, 'data');
     return data
 }
