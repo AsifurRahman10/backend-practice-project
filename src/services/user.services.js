@@ -1,5 +1,5 @@
 import { User } from "../models/user.models.js"
-import { ApiError } from "../utils/ApiError"
+import { ApiError } from "../utils/ApiError.js"
 
 
 export const updateUserPassword = async (oldPassword, newPassword, id) => {
@@ -44,3 +44,18 @@ export const updateCoverImage = async (id, uploadImage) => {
     ).select('-password')
     return user
 }
+
+
+export const userProfileInfo = async (username) => {
+    const profile = await User.aggregate([
+        // get the document from database
+        {
+            $match: {
+                username: username?.toLowerCase()
+            }
+        },
+        // get info
+
+
+    ])
+} 

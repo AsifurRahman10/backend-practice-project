@@ -1,6 +1,6 @@
 import { User } from "../models/user.models.js";
 import { generateAccessTokenAndRefreshToken } from "../services/auth.services.js";
-import { updateAvatarImage, updateUserPassword, updateUserProfile } from "../services/user.services.js";
+import { updateAvatarImage, updateUserPassword, updateUserProfile, userProfileInfo } from "../services/user.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -253,4 +253,13 @@ export const updateCoverImage = asyncHandler(async (req, res) => {
 
 })
 
+const getUserProfile = asyncHandler(async (req, res) => {
+    const { username } = req.params;
+
+    if (!username) {
+        throw new ApiError(400, "Username required")
+    }
+
+    const userProfile = userProfileInfo(username)
+})
 
