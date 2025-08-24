@@ -178,6 +178,5 @@ export const getUserWatchHistory = async (id) => {
             }
         }
     ])
-    console.log(data, 'data');
     return data
 }
