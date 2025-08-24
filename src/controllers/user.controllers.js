@@ -227,4 +227,30 @@ export const updateAvatar = asyncHandler(async (req, res) => {
 
 })
 
+export const updateCoverImage = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req.file?.path;
+    if (!coverImageLocalPath) {
+        throw new ApiError(401, "Something went wrong")
+    }
+    const id = req?.user?.id
+
+    const uploadImage = await uploadImageOnCloud(coverImageLocalPath)
+
+    if (!uploadImage?.url) {
+        throw new ApiError(401, "Error when uploading avatar")
+    }
+
+    const updatedUser = await updateCoverImage(id, uploadImage)
+
+    if (!updatedUser) {
+        throw new ApiError(400, "Server error")
+    }
+
+    res.status(200)
+        .json(
+            new ApiResponse(200, updatedUser, "User has successfully updated")
+        )
+
+})
+
 

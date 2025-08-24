@@ -36,3 +36,11 @@ export const updateAvatarImage = async (id, uploadImage) => {
     ).select('-password')
     return user
 }
+
+export const updateCoverImage = async (id, uploadImage) => {
+    const user = await User.findByIdAndUpdate(id,
+        { coverImage: uploadImage?.url },
+        { new: true }
+    ).select('-password')
+    return user
+}
