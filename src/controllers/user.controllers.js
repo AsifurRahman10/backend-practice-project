@@ -1,5 +1,6 @@
 import { User } from "../models/user.models.js";
 import { generateAccessTokenAndRefreshToken } from "../services/auth.services.js";
+import { updateAvatarImage, updateUserPassword, updateUserProfile, userProfileInfo } from "../services/user.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -168,5 +169,97 @@ export const refreshAccessToken = async (req, res) => {
     }
 }
 
+export const changePassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    const id = req.user._id;
+    await updateUserPassword(oldPassword, newPassword, id)
+    return res.status(200).json(
+        new ApiResponse(200, "Password updated")
+    )
+})
 
+export const getCurrentUser = asyncHandler(async (req, res) => {
+    return res
+        .status(200)
+        .json(200, req.user, "User retrieved successfully")
+})
+
+export const updateUserInfo = asyncHandler(async (req, res) => {
+    const { fullName, email } = req.body;
+    const id = req.user._id;
+    if (!email || !fullName) {
+        throw new ApiError(400, "Both field is required")
+    }
+    const updatedUser = await updateUserProfile(id, fullName, email)
+    if (!updatedUser) {
+        throw new ApiError(404, "User not found");
+    }
+
+    res.status(200)
+        .json(new ApiResponse(200, updatedData, "User info updated"))
+
+})
+
+
+export const updateAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.file?.path;
+    if (!avatarLocalPath) {
+        throw new ApiError(401, "Something went wrong")
+    }
+    const id = req?.user?.id
+
+    const uploadImage = await uploadImageOnCloud(avatarLocalPath)
+
+    if (!uploadImage?.url) {
+        throw new ApiError(401, "Error when uploading avatar")
+    }
+
+    const updatedUser = await updateAvatarImage(id, uploadImage)
+
+    if (!updatedUser) {
+        throw new ApiError(400, "Server error")
+    }
+
+    res.status(200)
+        .json(
+            new ApiResponse(200, updatedUser, "User has successfully updated")
+        )
+
+})
+
+export const updateCoverImage = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req.file?.path;
+    if (!coverImageLocalPath) {
+        throw new ApiError(401, "Something went wrong")
+    }
+    const id = req?.user?.id
+
+    const uploadImage = await uploadImageOnCloud(coverImageLocalPath)
+
+    if (!uploadImage?.url) {
+        throw new ApiError(401, "Error when uploading avatar")
+    }
+
+    const updatedUser = await updateCoverImage(id, uploadImage)
+
+    if (!updatedUser) {
+        throw new ApiError(400, "Server error")
+    }
+
+    res.status(200)
+        .json(
+            new ApiResponse(200, updatedUser, "User has successfully updated")
+        )
+
+})
+
+const getUserProfile = asyncHandler(async (req, res) => {
+    const { username } = req.params;
+
+    if (!username) {
+        throw new ApiError(400, "Username required")
+    }
+
+    const userProfile = userProfileInfo(username)
+})
 
