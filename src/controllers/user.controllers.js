@@ -174,7 +174,7 @@ export const changePassword = asyncHandler(async (req, res) => {
     const id = req.user._id;
     await updateUserPassword(oldPassword, newPassword, id)
     return res.status(200).json(
-        ApiResponse(200, "Password updated")
+        new ApiResponse(200, "Password updated")
     )
 })
 
