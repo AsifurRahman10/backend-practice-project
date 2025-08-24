@@ -1,6 +1,6 @@
 import { User } from "../models/user.models.js";
 import { generateAccessTokenAndRefreshToken } from "../services/auth.services.js";
-import { updateUserPassword, updateUserProfile } from "../services/user.services.js";
+import { updateAvatarImage, updateUserPassword, updateUserProfile } from "../services/user.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -200,5 +200,31 @@ export const updateUserInfo = asyncHandler(async (req, res) => {
 
 })
 
+
+export const updateAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.file?.path;
+    if (!avatarLocalPath) {
+        throw new ApiError(401, "Something went wrong")
+    }
+    const id = req?.user?.id
+
+    const uploadImage = await uploadImageOnCloud(avatarLocalPath)
+
+    if (!uploadImage?.url) {
+        throw new ApiError(401, "Error when uploading avatar")
+    }
+
+    const updatedUser = await updateAvatarImage(id, uploadImage)
+
+    if (!updatedUser) {
+        throw new ApiError(400, "Server error")
+    }
+
+    res.status(200)
+        .json(
+            new ApiResponse(200, updatedUser, "User has successfully updated")
+        )
+
+})
 
 

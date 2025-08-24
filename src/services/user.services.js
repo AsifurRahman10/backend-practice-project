@@ -28,3 +28,11 @@ export const updateUserProfile = async (id, fullName, email) => {
     ).select('-password')
     return user
 }
+
+export const updateAvatarImage = async (id, uploadImage) => {
+    const user = await User.findByIdAndUpdate(id,
+        { avatar: uploadImage?.url },
+        { new: true }
+    ).select('-password')
+    return user
+}
