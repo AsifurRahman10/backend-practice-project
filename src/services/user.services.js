@@ -54,8 +54,59 @@ export const userProfileInfo = async (username) => {
                 username: username?.toLowerCase()
             }
         },
-        // get info
+        // get info of who sub me
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscriber"
+            }
+        },
+        // get info of whom i subscriber
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        // find count
+        {
+            $addFields: {
+                subscriberCount: {
+                    $size: "$subscriber"
+                },
+                subscribedToCount: {
+                    $size: "subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req?.user?._id, "$subscriber.subscriber"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        // take only selective field
+        {
+            $project: {
+                username: 1,
+                fullName: 1,
+                subscriberCount: 1,
+                subscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
+            }
+        }
+
 
 
     ])
+
+    return profile
 } 

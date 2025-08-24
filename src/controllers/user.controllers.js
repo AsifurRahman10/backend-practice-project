@@ -253,7 +253,7 @@ export const updateCoverImage = asyncHandler(async (req, res) => {
 
 })
 
-const getUserProfile = asyncHandler(async (req, res) => {
+export const getUserProfile = asyncHandler(async (req, res) => {
     const { username } = req.params;
 
     if (!username) {
@@ -261,5 +261,11 @@ const getUserProfile = asyncHandler(async (req, res) => {
     }
 
     const userProfile = userProfileInfo(username)
+    if (!userProfile?.length) {
+        throw new ApiError(400, "Field to get user profile")
+    }
+
+    res.status(200)
+        .json(new ApiResponse(200, userProfile[0], 'User data retrieved successfully'))
 })
 
