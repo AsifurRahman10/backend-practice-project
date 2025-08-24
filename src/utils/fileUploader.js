@@ -29,7 +29,6 @@ const uploadImageOnCloud = async (localFilePath) => {
     }
 };
 
-const deleteImageFromCloud = async(image)
 
 const removeUploadedFiles = (files) => {
     if (!files) return;
