@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import { User } from "../models/user.models.js"
 import { ApiError } from "../utils/ApiError.js"
 
@@ -109,4 +110,44 @@ export const userProfileInfo = async (username) => {
     ])
 
     return profile
-} 
+}
+
+export const getUserWatchHistory = async (id) => {
+    const data = User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(id)
+            }
+        },
+        {
+            $lookup: {
+                from: 'videos',
+                localField: 'watchHistory',
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: "_id",
+                        as: "owner",
+                        pipeline: {
+                            $project: {
+                                username: 1,
+                                fullName: 1,
+                                avatar: 1
+                            }
+                        }
+                    },
+                    $addFields: {
+                        owner: {
+                            $first: "$owner"
+                        }
+                    }
+                }
+            }
+        }
+    ])
+
+    return data
+}

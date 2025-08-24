@@ -1,6 +1,6 @@
 import { User } from "../models/user.models.js";
 import { generateAccessTokenAndRefreshToken } from "../services/auth.services.js";
-import { updateAvatarImage, updateUserPassword, updateUserProfile, userProfileInfo } from "../services/user.services.js";
+import { getUserWatchHistory, updateAvatarImage, updateUserPassword, updateUserProfile, userProfileInfo } from "../services/user.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -267,5 +267,16 @@ export const getUserProfile = asyncHandler(async (req, res) => {
 
     res.status(200)
         .json(new ApiResponse(200, userProfile[0], 'User data retrieved successfully'))
+})
+
+export const getWatchHistory = asyncHandler(async (req, res) => {
+    const id = req?.user?._id
+    const watchHistory = await getUserWatchHistory(id)
+    console.log(watchHistory);
+
+    res.status(200)
+        .json(
+            new ApiResponse(200, watchHistory[0]?.watchHistory, "watch history retrieved")
+        )
 })
 
