@@ -1,5 +1,7 @@
 # YouTube Backend Practice Project
 
+https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj
+
 A backend practice project built with **Node.js**, **Express**, and **MongoDB** (Mongoose), inspired by YouTube's core features. This project demonstrates user authentication, file uploads, and modular service/controller architecture.
 
 ## Features
