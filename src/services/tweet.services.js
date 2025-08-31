@@ -24,3 +24,7 @@ export const updateUserTweet = async (updatedContent, id) => {
     }, { new: true })
     return data
 }
+export const deleteUserTweet = async (id) => {
+    const data = await Tweet.deleteOne(id)
+    return data
+}

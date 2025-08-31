@@ -1,4 +1,4 @@
-import { addTweet, getUserTweet, updateUserTweet } from "../services/tweet.services.js";
+import { addTweet, deleteUserTweet, getUserTweet, updateUserTweet } from "../services/tweet.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -55,7 +55,7 @@ export const updateTweet = asyncHandler(async (req, res) => {
     }
     const updatedTweet = await updateUserTweet(updatedContent, id)
     if (!updatedTweet) {
-        throw new ApiError(500, "Failed to save tweet");
+        throw new ApiError(500, "Failed to update tweet");
     }
     return res
         .status(201)
@@ -64,4 +64,15 @@ export const updateTweet = asyncHandler(async (req, res) => {
 
 export const deleteTweet = asyncHandler(async (req, res) => {
     //TODO: delete tweet
+    const id = req.body;
+    if (!id) {
+        throw new ApiError(401, "Need tweet id to delete the tweet")
+    }
+    const deletedTweet = await deleteUserTweet(id)
+    if (!deletedTweet) {
+        throw new ApiError(500, "Failed to delete tweet");
+    }
+    return res
+        .status(201)
+        .json(new ApiResponse(201, deletedTweet, "User tweets has been deleted"));
 })
