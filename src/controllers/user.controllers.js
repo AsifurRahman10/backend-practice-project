@@ -1,6 +1,6 @@
 import { User } from "../models/user.models.js";
 import { generateAccessTokenAndRefreshToken } from "../services/auth.services.js";
-import { updateAvatarImage, updateUserPassword, updateUserProfile, userProfileInfo } from "../services/user.services.js";
+import { getUserWatchHistory, updateAvatarImage, updateUserPassword, updateUserProfile, userProfileInfo } from "../services/user.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -11,7 +11,6 @@ import jwt from 'jsonwebtoken'
 
 export const registerUser = asyncHandler(async (req, res) => {
     const { username, email, fullName, password } = req.body;
-    console.log({ username, email, fullName, password });
     if ([username, email, fullName, password].some(field => field?.trim() === '')) {
         throw new ApiError(400, 'All field is required')
     }
@@ -19,7 +18,7 @@ export const registerUser = asyncHandler(async (req, res) => {
         $or: [{ username }, { email }]
     })
     if (userAlreadyExist) {
-        removeUploadedFiles(req.files)
+        removeUploadedFiles(req?.files)
         throw new ApiError(409, 'User already exist')
     }
     let avatarLocalPath;
@@ -54,7 +53,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     const user = await User.create(
         {
-            username: username.toLowerCase(), email: email.toLowerCase(), fullName, password, avatar: uploadAvatar.url, coverImage: uploadCoverImage?.url || '',
+            username: username?.toLowerCase(), email: email?.toLowerCase(), fullName, password, avatar: { url: uploadAvatar.url, public_id: uploadAvatar.public_id }, coverImage: { url: uploadCoverImage?.url || '', public_id: uploadCoverImage?.public_id || '' },
         }
     )
 
@@ -181,7 +180,9 @@ export const changePassword = asyncHandler(async (req, res) => {
 export const getCurrentUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
-        .json(200, req.user, "User retrieved successfully")
+        .json(
+            new ApiResponse(200, req.user, "User retrieved successfully")
+        )
 })
 
 export const updateUserInfo = asyncHandler(async (req, res) => {
@@ -196,7 +197,7 @@ export const updateUserInfo = asyncHandler(async (req, res) => {
     }
 
     res.status(200)
-        .json(new ApiResponse(200, updatedData, "User info updated"))
+        .json(new ApiResponse(200, updatedUser, "User info updated"))
 
 })
 
@@ -253,13 +254,30 @@ export const updateCoverImage = asyncHandler(async (req, res) => {
 
 })
 
-const getUserProfile = asyncHandler(async (req, res) => {
-    const { username } = req.params;
+export const getUserProfile = asyncHandler(async (req, res) => {
+    const { username } = req?.params;
+    const id = req?.user?._id
 
     if (!username) {
         throw new ApiError(400, "Username required")
     }
 
-    const userProfile = userProfileInfo(username)
+    const userProfile = await userProfileInfo(username, id)
+    if (!userProfile?.length) {
+        throw new ApiError(400, "failed to get user profile")
+    }
+
+    res.status(200)
+        .json(new ApiResponse(200, userProfile[0], 'User data retrieved successfully'))
+})
+
+export const getWatchHistory = asyncHandler(async (req, res) => {
+    const id = req?.user?._id
+    const watchHistory = await getUserWatchHistory(id)
+
+    res.status(200)
+        .json(
+            new ApiResponse(200, watchHistory[0]?.watchHistory, "watch history retrieved")
+        )
 })
 
