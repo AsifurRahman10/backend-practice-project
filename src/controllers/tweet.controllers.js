@@ -13,7 +13,7 @@ export const createTweet = asyncHandler(async (req, res) => {
 
     const { content } = req.body;
     const id = req?.user?._id;
-    if (!content && !id) {
+    if (!content || !id) {
         throw new ApiError(400, "Content required")
     }
     const newTweet = await addTweet({ id, content });
@@ -59,7 +59,7 @@ export const updateTweet = asyncHandler(async (req, res) => {
     }
     return res
         .status(201)
-        .json(new ApiResponse(201, updatedTweet, "User tweets has been retrieved"));
+        .json(new ApiResponse(201, updatedTweet, "Tweet updated successfully"));
 })
 
 export const deleteTweet = asyncHandler(async (req, res) => {
@@ -74,5 +74,5 @@ export const deleteTweet = asyncHandler(async (req, res) => {
     }
     return res
         .status(201)
-        .json(new ApiResponse(201, deletedTweet, "User tweets has been deleted"));
+        .json(new ApiResponse(201, deletedTweet, "Tweets has been deleted"));
 })
