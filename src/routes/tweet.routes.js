@@ -8,5 +8,6 @@ router.use(verifyJwt)
 
 router.route('/').post(createTweet)
 router.route('/').get(getUserTweets)
+router.route('/').patch(updateTweet)
 
 export default router

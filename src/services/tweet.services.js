@@ -14,3 +14,13 @@ export const getUserTweet = async (id) => {
     const data = await Tweet.find({ owner: id }).populate("owner", "email");
     return data
 }
+
+export const updateUserTweet = async (updatedContent, id) => {
+    const data = await Tweet.findByIdAndUpdate(id, {
+        $set: {
+            content: updatedContent,
+        },
+
+    }, { new: true })
+    return data
+}

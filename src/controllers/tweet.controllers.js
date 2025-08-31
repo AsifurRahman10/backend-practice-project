@@ -1,4 +1,4 @@
-import { addTweet, getUserTweet } from "../services/tweet.services.js";
+import { addTweet, getUserTweet, updateUserTweet } from "../services/tweet.services.js";
 import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -49,6 +49,17 @@ export const getUserTweets = asyncHandler(async (req, res) => {
 
 export const updateTweet = asyncHandler(async (req, res) => {
     //TODO: update tweet
+    const { id, updatedContent } = req.body;
+    if (!id) {
+        throw new ApiError(401, "Need tweet id to update the tweet")
+    }
+    const updatedTweet = await updateUserTweet(updatedContent, id)
+    if (!updatedTweet) {
+        throw new ApiError(500, "Failed to save tweet");
+    }
+    return res
+        .status(201)
+        .json(new ApiResponse(201, updatedTweet, "User tweets has been retrieved"));
 })
 
 export const deleteTweet = asyncHandler(async (req, res) => {
