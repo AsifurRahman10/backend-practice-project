@@ -7,5 +7,6 @@ const router = Router();
 router.use(verifyJwt)
 
 router.route('/').post(createTweet)
+router.route('/').get(getUserTweets)
 
 export default router
