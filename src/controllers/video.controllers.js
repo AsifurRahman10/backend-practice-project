@@ -1,4 +1,4 @@
-import { addVideoOnDB, fetchVideo } from "../services/video.services.js"
+import { addVideoOnDB, fetchVideo, getVideoByID } from "../services/video.services.js"
 import { ApiError } from "../utils/ApiError.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
@@ -69,6 +69,10 @@ export const publishAVideo = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: get video by id
+    if (!videoId) {
+        throw new ApiError(401, "Video id is not provided")
+    }
+    const result = await getVideoByID(videoId)
 })
 
 const updateVideo = asyncHandler(async (req, res) => {

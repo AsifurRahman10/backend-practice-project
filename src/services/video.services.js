@@ -12,16 +12,27 @@ export const fetchVideo = async ({ search,
     page,
     limit
 }) => {
-    const filter = {}
-    if (search) filter.title = { $regex: search, $options: 'i' }
-    if (userId) filter.owner = userId
+    const match = {}
+    if (search) match.title = { $regex: search, $options: 'i' }
+    if (userId) match.owner = userId
 
-    // sort
-    const sortField = sortBy && sortBy?.trim() ? sortBy : "createdAt"
-    const sort = { [sortField]: sortType === 'asc' ? 1 : -1 }
-    // pagination
-    const skip = (page - 1) * limit
+    const aggregate = Video.aggregate().match(match);
 
-    const videos = await Video.find(filter).sort(sort).skip(skip).limit(limit)
-    return videos
+    const sortField = sortBy && sortBy.trim() ? sortBy : "createdAt";
+    const sort = { [sortField]: sortType === "asc" ? 1 : -1 };
+
+
+    const options = {
+        page,
+        limit,
+        sort: { sort },
+    };
+
+    const result = await Video.aggregatePaginate(aggregate, options)
+    return result
+}
+
+export const getVideoByID = async (videoId) => {
+    const video = Video.findById(videoId)
+    return video
 }
