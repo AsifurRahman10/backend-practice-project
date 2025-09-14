@@ -1,4 +1,4 @@
-import { addVideoOnDB, fetchVideo, getVideoByID } from "../services/video.services.js"
+import { addVideoOnDB, deleteVideoService, fetchVideo, getVideoByID, updatePublishService, updateVideoService } from "../services/video.services.js"
 import { ApiError } from "../utils/ApiError.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
@@ -66,26 +66,67 @@ export const publishAVideo = asyncHandler(async (req, res) => {
 
 })
 
-const getVideoById = asyncHandler(async (req, res) => {
+export const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: get video by id
     if (!videoId) {
         throw new ApiError(401, "Video id is not provided")
     }
     const result = await getVideoByID(videoId)
+    res
+        .status(201).
+        json(new ApiResponse(201, result, "video retrieve successfully"))
 })
 
-const updateVideo = asyncHandler(async (req, res) => {
+export const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    const userId = req.user.id
     //TODO: update video details like title, description, thumbnail
+    const result = await updateVideoService({
+        videoId,
+        userId,
+        body: req.body,
+        file: req.file
+    })
+    if (!result) {
+        throw new ApiError(401, "Server Error")
+    }
+    res.status(201)
+        .json(new ApiResponse(200, result, 'Video details updated'))
 
 })
 
-const deleteVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
+export const deleteVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req?.params
+    const userId = req.user.id
     //TODOj: delete video
+    if (!videoId) {
+        throw new ApiError(401, "videoID not found")
+    }
+    const result = await deleteVideoService({ videoId, userId })
+
+    if (result?.deletedCount === 0) {
+        throw new ApiError(401, "videoID not found")
+    }
+    res.status(201)
+        .json(
+            new ApiResponse(200, result, "Video deleted successfully")
+        )
+
 })
 
-const togglePublishStatus = asyncHandler(async (req, res) => {
+export const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    const userId = req.user.id
+    const { updateStatus } = req.body;
+    if (!videoId) {
+        throw new ApiError(401, "videoID not found")
+    }
+    console.log('hit');
+    const result = await updatePublishService({ videoId, userId, updateStatus })
+    res.status(201)
+        .json(
+            new ApiResponse(200, result, "Video status has been changed")
+        )
+
 })

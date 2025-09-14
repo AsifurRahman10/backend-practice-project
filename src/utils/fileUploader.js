@@ -29,6 +29,16 @@ const uploadImageOnCloud = async (localFilePath) => {
     }
 };
 
+export const removeUploadedFilesCloud = async (publicID) => {
+    if (publicID) return null
+    try {
+        const result = await cloudinary.uploader.destroy(publicID)
+        return result.result === 'ok';
+    } catch (error) {
+        return false
+    }
+}
+
 
 
 const removeUploadedFiles = (files) => {
