@@ -1,12 +1,27 @@
-import { addVideoOnDB } from "../services/video.services.js"
+import { addVideoOnDB, fetchVideo } from "../services/video.services.js"
 import { ApiError } from "../utils/ApiError.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { uploadImageOnCloud } from "../utils/fileUploader.js"
 
-const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+export const getAllVideos = asyncHandler(async (req, res) => {
+    const { page, limit, search, sortBy, sortType, userId } = req.query;
     //TODO: get all videos based on query, sort, pagination
+    const result = await fetchVideo({
+        search,
+        userId,
+        sortBy,
+        sortType,
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 10
+    })
+    if (!result) {
+        throw new ApiError(401, "No videos found")
+    }
+    res.status(201)
+        .json(
+            new ApiResponse(201, result, "Video retrieved successfully")
+        )
 })
 
 export const publishAVideo = asyncHandler(async (req, res) => {
@@ -64,7 +79,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
-    //TODO: delete video
+    //TODOj: delete video
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
